@@ -1,9 +1,8 @@
-# Lab · Porting Endpoint ALP ke Sequelize (±45 menit, tim)
+# Lab · Porting Endpoint ALP ke Sequelize
 
-> Folder ini project lengkap. Hasil Demo 1 sampai Demo 3 **sudah terisi** (catch-up). Kalau pekerjaanmu sendiri sudah jalan, boleh pakai punyamu.
-> Buka folder ini langsung di VS Code, lalu lakukan persiapan di [README utama](../README.md) (mis. salin `.env`, install, atau `git init`) **di folder ini**. Semua path relatif terhadap folder ini.
+[Persiapan](../README.md) · [Troubleshooting](../TROUBLESHOOTING.md)
 
-Penjelasan 10 menit (skenario, kontrak, rubrik, cek otomatis), lalu kerja tim 35 menit: model ±8, repository dan router ±15, test ±7, cek dan penilaian manual ±5. Boleh dilanjut setelah kelas.
+> Hasil Demo 1 sampai Demo 3 sudah terisi di folder ini. Buka folder ini langsung di VS Code dan lakukan persiapan project di sini (`.env`, install, atau `git init`).
 
 ## Skenario
 
@@ -31,7 +30,7 @@ Tech lead tim ALP memutuskan satu endpoint ALP dipindahkan dulu ke Sequelize seb
 2. `src/alp/repository.js` (TODO LAB 2–4): daftar dengan `findAndCountAll`, detail dengan `findByPk`, data anak lewat model. Tanpa `sequelize.query` dan tanpa SQL tulisan tangan.
 3. `src/alp/router.js` (TODO LAB 5): tiga route, validasi zod, `404` dengan `notFound()`.
 4. `challenge/alp.test.js`: minimal 4 test yang memanggil endpoint tim. Pakai GET saja, atau kembalikan data yang diubah. `npm run test:alp`.
-5. `challenge/lab-alp.json`: isi sesuai tabel tim, lalu `npm run cek:lab` (server tidak perlu jalan).
+5. `challenge/lab-alp.json`: isi sesuai tabel tim, lalu `npm run cek:lab` (server boleh mati).
 
 | Isian `lab-alp.json` | Arti |
 | --- | --- |
@@ -58,13 +57,13 @@ Tech lead tim ALP memutuskan satu endpoint ALP dipindahkan dulu ke Sequelize seb
 
 Cek membandingkan jawaban endpoint dengan hasil `SELECT` miliknya sendiri. Poin kriteria 2–10 hanya diberikan kalau log Sequelize untuk request itu memuat SQL buatan model (`FROM "NAMA_TABEL" "Alias"` dengan kutip). Jawaban yang benar lewat `sequelize.query` atau SQL tulisan tangan belum dihitung sebagai porting. Cek hanya mengirim GET dan menjalankan SELECT, lalu menjalankan test tim.
 
-| No | Kriteria manual (instruktur atau tim lain) | Poin |
+| No | Kriteria manual (lewat review) | Poin |
 | --- | --- | --- |
 | M1 | Tabel perbandingan SQL vs ORM untuk endpoint yang diporting: jumlah baris kode, SQL buatan Sequelize untuk satu request daftar dan satu data anak (`DB_LOG_SQL=true`), satu hal yang jadi lebih mudah dan satu yang lebih sulit | 8 |
 | M2 | Kontrak tidak berubah: nama field, format uang dan waktu, serta kode error sama dengan versi SQL tim (atau dengan kontrak di atas bila versi SQL belum ada), dibuktikan dengan satu respons yang dibandingkan | 6 |
 | M3 | Keputusan lapisan data ALP (SQL langsung, ORM, atau campuran) dan alasannya, ditulis di backlog ALP | 6 |
 
-Kalau waktu mepet, kerjakan dulu kriteria wajib 45 poin: nomor 1, 2, 3, 6, dan 7. Sisanya boleh dilanjutkan setelah kelas.
+Prioritas: kerjakan dulu kriteria wajib 45 poin: nomor 1, 2, 3, 6, dan 7. Sisanya menyusul.
 
 ## Bonus Lab (opsional, maks. +10, dinilai manual)
 

@@ -1,11 +1,12 @@
-# Demo 3 · Transfer dengan `sequelize.transaction()` (±30 menit)
+# Demo 3 · Transfer dengan `sequelize.transaction()`
 
-> Folder ini project lengkap. Hasil Demo 1 sampai Demo 2 **sudah terisi** (catch-up). Kalau pekerjaanmu sendiri sudah jalan, boleh pakai punyamu.
-> Buka folder ini langsung di VS Code, lalu lakukan persiapan di [README utama](../README.md) (mis. salin `.env`, install, atau `git init`) **di folder ini**. Semua path relatif terhadap folder ini.
+[Persiapan](../README.md) · [Troubleshooting](../TROUBLESHOOTING.md)
 
-Peraga 10 menit: kunci baris, cek saldo dalam sen, `{ transaction: t }`. Ikuti 20 menit: 3.1–3.2.
+> Hasil Demo 1 sampai Demo 2 sudah terisi di folder ini. Buka folder ini langsung di VS Code dan lakukan persiapan project di sini (`.env`, install, atau `git init`).
 
-## 3.1 Tulis ulang transfer (±15 menit)
+Kerjakan 3.1–3.2: transfer dengan `sequelize.transaction()`.
+
+## 3.1 Tulis ulang transfer
 
 Aturannya sama dengan sesi 31. Di `src/repositories/orm/transfer.repository.js`:
 
@@ -57,7 +58,7 @@ export async function transfer({ fromAccountId, toAccountId, amount, description
 
 Di versi SQL, cek saldo ada di `WHERE balance >= :amount`. Di versi ORM, cek pindah ke JavaScript. Itu aman karena baris sudah dikunci `FOR UPDATE`, dan perbandingan memakai `toCents()` (BigInt sen), tidak pernah float.
 
-## 3.2 Test (±5 menit)
+## 3.2 Test
 
 ```bash
 npm run db:reset

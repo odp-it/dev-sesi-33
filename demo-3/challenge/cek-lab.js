@@ -1,7 +1,7 @@
 // Sesi 33 · Lab: cek otomatis porting endpoint ALP tim ke Sequelize (80 poin otomatis; 20 poin dinilai manual).
 // Cara pakai (dari folder lab):
 //   1. Isi challenge/lab-alp.json sesuai tabel ALP tim.
-//   2. npm run cek:lab        (tidak perlu server jalan; aplikasi lapisan orm dijalankan di port acak)
+//   2. npm run cek:lab        (server boleh mati; aplikasi lapisan orm dijalankan di port acak)
 //   3. Baca tabel poin dan catatan, perbaiki, jalankan lagi.
 // Jawaban endpoint dibandingkan dengan isi database. Cek ini sendiri hanya menjalankan SELECT dan hanya
 // mengirim request GET, lalu menjalankan challenge/alp.test.js milik tim.

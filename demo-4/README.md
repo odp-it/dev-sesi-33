@@ -1,11 +1,12 @@
-# Demo 4 · Bandingkan SQL vs ORM (±30 menit)
+# Demo 4 · Bandingkan SQL vs ORM
 
-> Folder ini project lengkap. Hasil Demo 1 sampai Demo 3 **sudah terisi** (catch-up). Kalau pekerjaanmu sendiri sudah jalan, boleh pakai punyamu.
-> Buka folder ini langsung di VS Code, lalu lakukan persiapan di [README utama](../README.md) (mis. salin `.env`, install, atau `git init`) **di folder ini**. Semua path relatif terhadap folder ini.
+[Persiapan](../README.md) · [Troubleshooting](../TROUBLESHOOTING.md)
 
-Peraga 15 menit: `npm run compare`, log SQL, baris kode, laporan raw SQL, dan kapan pakai mana. Ikuti 15 menit: 4.1–4.3.
+> Hasil Demo 1 sampai Demo 3 sudah terisi di folder ini. Buka folder ini langsung di VS Code dan lakukan persiapan project di sini (`.env`, install, atau `git init`).
 
-## 4.1 Dua server, satu perbandingan (±4 menit)
+Kerjakan 4.1–4.3: bandingkan lapisan SQL dan ORM.
+
+## 4.1 Dua server, satu perbandingan
 
 Pastikan `npm run dev:sql` (port 3000) dan `npm run dev:orm` (port 3001) jalan di dua terminal, lalu di terminal ketiga:
 
@@ -30,7 +31,7 @@ Yang harus terlihat: 11 baris endpoint dengan kolom `sql`, `orm` berisi status y
 
 Angka baris kode bisa sedikit berbeda kalau kode ditulis dengan gaya lain.
 
-## 4.2 Lihat SQL buatan Sequelize (±5 menit)
+## 4.2 Lihat SQL buatan Sequelize
 
 Hentikan `dev:orm`, ubah `DB_LOG_SQL=true` di `.env`, jalankan lagi `npm run dev:orm`, lalu:
 
@@ -40,7 +41,7 @@ curl "http://localhost:3001/api/customers?q=contoh&segment=UMKM&page=2&pageSize=
 
 Di terminal server muncul dua baris `SQL>`: satu `SELECT count("Customer"."CUSTOMER_ID")`, satu SELECT dengan `LEFT OUTER JOIN "BRANCHES"` dan `OFFSET 2 ROWS FETCH NEXT 2 ROWS ONLY`. Bandingkan dengan `findMany` di `repositories/sql/customer.repository.js`. Kembalikan `DB_LOG_SQL=false`.
 
-## 4.3 Tabel perbandingan (±6 menit)
+## 4.3 Tabel perbandingan
 
 Isi tabel ini dari pengalaman lab (berpasangan dengan teman sebelah):
 

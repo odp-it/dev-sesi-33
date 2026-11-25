@@ -1,11 +1,12 @@
-# Demo 1 · Setup, Baseline Dua Lapisan, dan Nasabah (±60 menit)
+# Demo 1 · Setup, Baseline Dua Lapisan, dan Nasabah
 
-> Folder ini project lengkap. Isinya starter: belum ada Demo yang diisi.
-> Buka folder ini langsung di VS Code, lalu lakukan persiapan di [README utama](../README.md) (mis. salin `.env`, install, atau `git init`) **di folder ini**. Semua path relatif terhadap folder ini.
+[Persiapan](../README.md) · [Troubleshooting](../TROUBLESHOOTING.md)
 
-Peraga 25 menit dalam dua bagian: satu pintu repository dan dua server (sebelum 1.1), lalu `findAndCountAll` dan error Sequelize (sebelum 1.4). Ikuti 35 menit: 1.1–1.3 setup dan baseline (±10 menit), lalu 1.4–1.7 nasabah dengan Sequelize (±25 menit).
+> Buka folder ini langsung di VS Code dan lakukan persiapan project di sini (`.env`, install, atau `git init`).
 
-## 1.1 Install dan data (±3 menit)
+Kerjakan 1.1–1.7: setup, baseline dua lapisan, lalu endpoint nasabah dengan Sequelize.
+
+## 1.1 Install dan data
 
 ```bash
 npm ci
@@ -15,7 +16,7 @@ npm run db:reset
 
 PowerShell: `Copy-Item .env.example .env`. Isi `DB_PASSWORD`. `TZ=UTC` wajib ada (di Windows pun terbaca lewat `--env-file`). Kalau VS Code menampilkan dialog `Do you trust the authors of the files in this folder?`, pilih **Trust Folder & Continue**.
 
-## 1.2 Baseline lapisan SQL (±3 menit)
+## 1.2 Baseline lapisan SQL
 
 ```bash
 npm run dev:sql
@@ -23,7 +24,7 @@ npm run dev:sql
 
 Yang harus terlihat: `API Tabungan UMKM jalan di http://localhost:3000 (DATA_LAYER=sql)`. Di Bruno, buka folder `bruno/`, pilih environment **local**, **Run Collection**: 26 dari 26 lulus.
 
-## 1.3 Baseline lapisan ORM (±4 menit)
+## 1.3 Baseline lapisan ORM
 
 Buka terminal kedua (biarkan `dev:sql` tetap jalan):
 
@@ -36,11 +37,11 @@ Yang harus terlihat: `... http://localhost:3001 (DATA_LAYER=orm)`. Di Bruno, gan
 
 `npm run dev:orm` memuat `.env` lalu `env/orm.env`. File yang dimuat terakhir menang, jadi `DATA_LAYER` dan `PORT` dari `env/orm.env` menimpa nilai di `.env`.
 
-**Nasabah dengan Sequelize (1.4–1.7, ±25 menit)**
+**Nasabah dengan Sequelize (1.4–1.7)**
 
 Buka `src/repositories/sql/customer.repository.js` dan `src/repositories/orm/customer.repository.js` berdampingan (**View → Editor Layout → Two Columns**).
 
-## 1.4 Daftar nasabah (±7 menit)
+## 1.4 Daftar nasabah
 
 ```js
 export async function findMany({ page, pageSize, q, segment }) {
@@ -57,7 +58,7 @@ export async function findMany({ page, pageSize, q, segment }) {
 
 `findAndCountAll` menjalankan dua query (COUNT dan SELECT), sama seperti versi SQL. Bedanya, SQL-nya dibuat Sequelize.
 
-## 1.5 Detail nasabah (±4 menit)
+## 1.5 Detail nasabah
 
 ```js
 export async function findById(id) {
@@ -67,7 +68,7 @@ export async function findById(id) {
 }
 ```
 
-## 1.6 Buat, ganti, hapus (±6 menit)
+## 1.6 Buat, ganti, hapus
 
 ```js
 export async function create(data) {
@@ -101,7 +102,7 @@ export async function remove(id) {
 
 Nomor CIF dibuat dari ID baru seperti versi SQL, jadi `create` dan `update` CIF dibungkus `sequelize.transaction()`. Di luar transaksi, setiap `create`/`update`/`destroy` langsung di-commit Sequelize (tidak ada `autoCommit`).
 
-## 1.7 Error Sequelize ke kode kontrak (±8 menit)
+## 1.7 Error Sequelize ke kode kontrak
 
 Restart `dev:orm` (Ctrl+C lalu `npm run dev:orm`; `--watch` hanya memantau file `.js`), lalu kirim nasabah ganda:
 

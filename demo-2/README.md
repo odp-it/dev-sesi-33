@@ -1,11 +1,12 @@
-# Demo 2 · Rekening & Mutasi (±20 menit)
+# Demo 2 · Rekening & Mutasi
 
-> Folder ini project lengkap. Hasil Demo 1 **sudah terisi** (catch-up). Kalau pekerjaanmu sendiri sudah jalan, boleh pakai punyamu.
-> Buka folder ini langsung di VS Code, lalu lakukan persiapan di [README utama](../README.md) (mis. salin `.env`, install, atau `git init`) **di folder ini**. Semua path relatif terhadap folder ini.
+[Persiapan](../README.md) · [Troubleshooting](../TROUBLESHOOTING.md)
 
-Peraga 5 menit: batas tanggal dengan `TZ=UTC` dan format uang. Ikuti 15 menit: 2.1–2.2.
+> Hasil Demo 1 sudah terisi di folder ini. Buka folder ini langsung di VS Code dan lakukan persiapan project di sini (`.env`, install, atau `git init`).
 
-## 2.1 Rekening (±5 menit)
+Kerjakan 2.1–2.2: rekening dan mutasi dengan Sequelize.
+
+## 2.1 Rekening
 
 ```js
 export async function findByCustomer(customerId) {
@@ -19,7 +20,7 @@ export async function findById(id) {
 }
 ```
 
-## 2.2 Mutasi dengan filter (±10 menit)
+## 2.2 Mutasi dengan filter
 
 ```js
 export async function findTransactions(accountId, { from, to, category, page, pageSize }) {
