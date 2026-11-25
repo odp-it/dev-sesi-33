@@ -1,0 +1,27 @@
+meta {
+  name: Create customer duplicate
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/customers
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "fullName": "Eka Contoh",
+    "email": "eka.contoh@example.com",
+    "phone": "0800-0000-0101",
+    "segment": "UMKM",
+    "branchId": 1
+  }
+}
+
+assert {
+  res.status: eq 409
+  res.body.error.code: eq DUPLICATE
+  res.body.error.details[0].field: eq email
+}

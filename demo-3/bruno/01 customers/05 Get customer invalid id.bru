@@ -1,0 +1,16 @@
+meta {
+  name: Get customer invalid id
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/customers/abc
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+  res.body.error.code: eq VALIDATION_ERROR
+}

@@ -1,0 +1,19 @@
+meta {
+  name: List customers page 1
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/customers?page=1&pageSize=5
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: length 5
+  res.body.page: eq 1
+  res.body.pageSize: eq 5
+  res.body.total: isNumber
+}

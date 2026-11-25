@@ -1,0 +1,26 @@
+meta {
+  name: Transfer ok
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/transfers
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "fromAccountId": 1,
+    "toAccountId": 2,
+    "amount": "250000.00",
+    "description": "Bayar bahan baku"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.refNo: startsWith REF-SIM-T
+  res.body.amount: eq "250000.00"
+}

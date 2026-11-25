@@ -1,0 +1,17 @@
+meta {
+  name: Get customer 1
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/customers/1
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.cifNo: eq CIF-SIM-0001
+  res.body.accountCount: eq 2
+}

@@ -1,0 +1,21 @@
+{
+  "resource": "ISI_NAMA_RESOURCE",
+  "table": "ISI_NAMA_TABEL",
+  "idColumn": "ISI_KOLOM_ID",
+  "filter": {
+    "param": "ISI_NAMA_PARAMETER",
+    "column": "ISI_KOLOM_TEKS",
+    "value": "ISI_NILAI_FILTER"
+  },
+  "child": {
+    "resource": "ISI_NAMA_RESOURCE_ANAK",
+    "table": "ISI_NAMA_TABEL_ANAK",
+    "idColumn": "ISI_KOLOM_ID_ANAK",
+    "fkColumn": "ISI_KOLOM_FK"
+  },
+  "money": {
+    "on": "resource",
+    "column": "ISI_KOLOM_UANG",
+    "field": "ISI_NAMA_FIELD_UANG"
+  }
+}

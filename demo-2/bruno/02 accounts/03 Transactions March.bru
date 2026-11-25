@@ -1,0 +1,26 @@
+meta {
+  name: Transactions March
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/accounts/1/transactions?from=2026-03-01&to=2026-03-31
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.total: isNumber
+}
+
+tests {
+  test("semua mutasi di bulan Maret dan uang berupa string", function () {
+    res.getBody().data.forEach((t) => {
+      expect(t.txnAt.startsWith("2026-03")).to.equal(true);
+      expect(t.txnAt.endsWith("+07:00")).to.equal(true);
+      expect(t.amount).to.match(/^\d+\.\d{2}$/);
+    });
+  });
+}

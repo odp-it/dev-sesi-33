@@ -1,0 +1,24 @@
+meta {
+  name: Transfer insufficient balance
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/transfers
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "fromAccountId": 1,
+    "toAccountId": 2,
+    "amount": "999999999.00"
+  }
+}
+
+assert {
+  res.status: eq 409
+  res.body.error.code: eq INSUFFICIENT_BALANCE
+}

@@ -1,0 +1,16 @@
+meta {
+  name: Delete customer with accounts
+  type: http
+  seq: 10
+}
+
+delete {
+  url: {{baseUrl}}/customers/1
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 409
+  res.body.error.code: eq CUSTOMER_HAS_ACCOUNTS
+}

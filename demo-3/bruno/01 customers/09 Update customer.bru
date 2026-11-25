@@ -1,0 +1,27 @@
+meta {
+  name: Update customer
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{baseUrl}}/customers/{{newCustomerId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "fullName": "Eka Contoh Ubah",
+    "email": "eka.contoh@example.com",
+    "phone": "0800-0000-0199",
+    "segment": "UMKM",
+    "branchId": 2
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.fullName: eq Eka Contoh Ubah
+  res.body.branchCode: eq KCP-SIM-02
+}

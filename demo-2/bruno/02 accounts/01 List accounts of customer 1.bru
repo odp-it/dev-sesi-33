@@ -1,0 +1,16 @@
+meta {
+  name: List accounts of customer 1
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/customers/1/accounts
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: length 2
+}

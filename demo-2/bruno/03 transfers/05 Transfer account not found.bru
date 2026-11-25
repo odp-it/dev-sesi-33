@@ -1,0 +1,24 @@
+meta {
+  name: Transfer account not found
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/transfers
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "fromAccountId": 1,
+    "toAccountId": 999,
+    "amount": "100000.00"
+  }
+}
+
+assert {
+  res.status: eq 404
+  res.body.error.code: eq NOT_FOUND
+}

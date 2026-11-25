@@ -1,0 +1,32 @@
+meta {
+  name: Create customer
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/customers
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "fullName": "Eka Contoh",
+    "email": "eka.contoh@example.com",
+    "phone": "0800-0000-0101",
+    "segment": "UMKM",
+    "branchId": 1
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.cifNo: startsWith CIF-SIM-
+  res.body.accountCount: eq 0
+  res.headers.location: startsWith /api/customers/
+}
+
+script:post-response {
+  bru.setVar("newCustomerId", res.getBody().id);
+}

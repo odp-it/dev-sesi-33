@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Tabungan UMKM API",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

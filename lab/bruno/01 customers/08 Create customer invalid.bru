@@ -1,0 +1,27 @@
+meta {
+  name: Create customer invalid
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/customers
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "fullName": "X",
+    "email": "bukan-email",
+    "phone": "12345",
+    "segment": "KORPORASI",
+    "branchId": "abc"
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.error.code: eq VALIDATION_ERROR
+  res.body.error.details: isArray
+}

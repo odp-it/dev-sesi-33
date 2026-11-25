@@ -1,0 +1,27 @@
+{
+  "name": "tabungan-umkm-api",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "REST API Tabungan UMKM (data simulasi): lapisan data SQL langsung atau Sequelize, kontrak sama",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node --env-file=.env src/server.js",
+    "dev:sql": "node --watch --env-file=.env --env-file=env/sql.env src/server.js",
+    "dev:orm": "node --watch --env-file=.env --env-file=env/orm.env src/server.js",
+    "db:reset": "node --env-file=.env scripts/db-reset.js",
+    "compare": "node scripts/compare-layers.js",
+    "cek:lab": "node --env-file=.env --env-file=env/orm.env challenge/cek-lab.js",
+    "test:alp": "node --env-file=.env --env-file=env/orm.env --test challenge/alp.test.js"
+  },
+  "dependencies": {
+    "express": "5.3.0",
+    "oracledb": "26.0.0",
+    "sequelize": "6.37.8",
+    "swagger-ui-express": "5.0.1",
+    "yaml": "2.9.1",
+    "zod": "4.6.7"
+  }
+}

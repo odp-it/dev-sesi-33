@@ -1,0 +1,625 @@
+openapi: 3.1.0
+info:
+  title: Tabungan UMKM API
+  version: 1.0.0
+  summary: Kontrak API referensi aplikasi contoh Tabungan UMKM (data simulasi).
+  description: |
+    Kontrak yang dipakai backend (sesi 29–36), web (37–48), dan mobile (46, 49–56).
+
+    - JSON, UTF-8.
+    - Uang dikirim sebagai string desimal (`"1500000.00"`) supaya presisi `NUMBER(15,2)` tidak hilang.
+    - Waktu ISO 8601 (`2026-03-01T08:00:00+07:00`).
+    - Semua error memakai bentuk `Error` yang sama.
+    - Implementasi sesi 29 (data di memori): branches, customers, accounts, reports.
+      `POST /transfers` diimplementasikan di sesi 31, `/auth/*` dan header Bearer di sesi 34.
+servers:
+  - url: /api
+    description: Server yang sama dengan halaman /docs (port mana pun)
+  - url: http://localhost:3000/api
+    description: Lokal
+tags:
+  - name: Auth
+    description: Login dan profil (sesi 34)
+  - name: Branches
+  - name: Customers
+  - name: Accounts
+  - name: Transfers
+    description: Transfer antar rekening, commit/rollback (sesi 31)
+  - name: Reports
+    description: Data dashboard
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+            example: { username: teller.sim, password: ISI_PASSWORD_SIMULASI }
+      responses:
+        '200':
+          description: Login berhasil
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401':
+          description: Username atau password salah (`INVALID_CREDENTIALS`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: { code: INVALID_CREDENTIALS, message: Username atau password salah } }
+        '429':
+          description: Login gagal berulang, lebih dari 5 percobaan (`TOO_MANY_REQUESTS`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Profil user yang sedang login
+      operationId: getMe
+      responses:
+        '200':
+          description: Profil
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /branches:
+    get:
+      tags: [Branches]
+      summary: Daftar cabang
+      description: 'Role: semua.'
+      operationId: listBranches
+      responses:
+        '200':
+          description: Semua cabang
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Branch' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /customers:
+    get:
+      tags: [Customers]
+      summary: Daftar nasabah (pagination + filter)
+      description: 'Role: ADMIN, TELLER.'
+      operationId: listCustomers
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: q
+          in: query
+          description: Cari di nama atau CIF
+          schema: { type: string, maxLength: 50 }
+        - name: segment
+          in: query
+          schema: { $ref: '#/components/schemas/Segment' }
+      responses:
+        '200':
+          description: Satu halaman nasabah
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerPage' }
+              example:
+                data:
+                  - { id: 1, cifNo: CIF-SIM-0001, fullName: Rina Contoh, segment: UMKM, branchCode: KCP-SIM-01 }
+                page: 1
+                pageSize: 10
+                total: 12
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Customers]
+      summary: Buat nasabah
+      description: 'Role: ADMIN, TELLER. CIF dibuat server.'
+      operationId: createCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CustomerInput' }
+            example: { fullName: Wulan Contoh, email: wulan.contoh@example.com, phone: 0800-0000-0013, segment: UMKM, branchId: 2 }
+      responses:
+        '201':
+          description: Nasabah dibuat
+          headers:
+            Location:
+              description: URL nasabah baru
+              schema: { type: string, example: /api/customers/13 }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerDetail' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409':
+          description: Email atau CIF sudah dipakai (`DUPLICATE`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: { code: DUPLICATE, message: email wulan.contoh@example.com sudah terdaftar } }
+
+  /customers/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Customers]
+      summary: Detail nasabah + jumlah rekening
+      description: 'Role: ADMIN, TELLER.'
+      operationId: getCustomer
+      responses:
+        '200':
+          description: Detail nasabah
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerDetail' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Customers]
+      summary: Ganti data nasabah
+      description: 'Role: ADMIN, TELLER. Semua field dikirim (replace).'
+      operationId: replaceCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CustomerInput' }
+      responses:
+        '200':
+          description: Data terbaru
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerDetail' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Email sudah dipakai nasabah lain (`DUPLICATE`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      tags: [Customers]
+      summary: Hapus nasabah
+      description: 'Role: ADMIN. Ditolak bila nasabah masih punya rekening.'
+      operationId: deleteCustomer
+      responses:
+        '204':
+          description: Terhapus, tanpa body
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Nasabah masih punya rekening (`CUSTOMER_HAS_ACCOUNTS`, ORA-02292 di Oracle)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: { code: CUSTOMER_HAS_ACCOUNTS, message: Nasabah 1 masih punya 2 rekening } }
+
+  /customers/{id}/accounts:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Customers, Accounts]
+      summary: Rekening milik nasabah
+      description: 'Role: ADMIN, TELLER, NASABAH (hanya miliknya).'
+      operationId: listCustomerAccounts
+      responses:
+        '200':
+          description: Rekening nasabah
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Account' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /accounts/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Accounts]
+      summary: Detail rekening
+      description: 'Role: ADMIN, TELLER, NASABAH (hanya miliknya).'
+      operationId: getAccount
+      responses:
+        '200':
+          description: Detail rekening
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /accounts/{id}/transactions:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Accounts]
+      summary: Mutasi rekening
+      description: 'Role: ADMIN, TELLER, NASABAH (hanya miliknya). Urut dari transaksi terlama.'
+      operationId: listAccountTransactions
+      parameters:
+        - name: from
+          in: query
+          description: Tanggal awal (inklusif)
+          schema: { type: string, format: date, example: '2026-03-01' }
+        - name: to
+          in: query
+          description: Tanggal akhir (inklusif)
+          schema: { type: string, format: date, example: '2026-03-31' }
+        - name: category
+          in: query
+          schema: { $ref: '#/components/schemas/Category' }
+        - $ref: '#/components/parameters/Page'
+        - name: pageSize
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+      responses:
+        '200':
+          description: Satu halaman mutasi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TransactionPage' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /transfers:
+    post:
+      tags: [Transfers]
+      summary: Transfer antar rekening
+      description: |
+        Role: TELLER, NASABAH. Satu debit + satu kredit dalam satu transaksi database:
+        commit kalau dua-duanya berhasil, rollback kalau salah satu gagal. Diimplementasikan di sesi 31.
+      operationId: createTransfer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransferRequest' }
+            example: { fromAccountId: 1, toAccountId: 5, amount: '250000.00', description: Bayar bahan baku }
+      responses:
+        '201':
+          description: Transfer tercatat
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TransferResult' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Saldo kurang (`INSUFFICIENT_BALANCE`), rekening diblokir (`ACCOUNT_BLOCKED`), rekening ditutup (`ACCOUNT_CLOSED`), atau melebihi limit role (`LIMIT_EXCEEDED`, NASABAH 25 juta, TELLER 100 juta)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: { code: INSUFFICIENT_BALANCE, message: Saldo rekening 1 tidak cukup } }
+
+  /reports/branch-balances:
+    get:
+      tags: [Reports]
+      summary: Saldo per cabang (dashboard)
+      description: 'Role: ADMIN.'
+      operationId: getBranchBalances
+      responses:
+        '200':
+          description: Satu baris per cabang
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/BranchBalance' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/cashflow:
+    get:
+      tags: [Reports]
+      summary: Arus kas UMKM per kategori (dashboard)
+      description: 'Role: ADMIN, NASABAH. Tanpa accountId: semua rekening.'
+      operationId: getCashflow
+      parameters:
+        - name: accountId
+          in: query
+          schema: { type: integer, minimum: 1 }
+        - name: month
+          in: query
+          required: true
+          schema: { type: string, pattern: '^\d{4}-\d{2}$', example: '2026-03' }
+      responses:
+        '200':
+          description: Ringkasan arus kas
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cashflow' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      name: pageSize
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 50, default: 10 }
+
+  responses:
+    ValidationError:
+      description: Body/query/path tidak valid (`VALIDATION_ERROR`)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            error:
+              code: VALIDATION_ERROR
+              message: amount harus lebih dari 0
+              details: [{ field: amount, issue: too_small, message: amount harus lebih dari 0 }]
+    Unauthorized:
+      description: Tanpa token atau token tidak valid (`UNAUTHORIZED`)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Role tidak boleh mengakses (`FORBIDDEN`)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Data tidak ada (`NOT_FOUND`)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: NOT_FOUND, message: Nasabah 99 tidak ditemukan } }
+
+  schemas:
+    Money:
+      type: string
+      pattern: '^-?\d+\.\d{2}$'
+      description: Nominal rupiah sebagai string desimal 2 angka di belakang titik
+      examples: ['1500000.00']
+    Segment:
+      type: string
+      enum: [INDIVIDU, UMKM]
+    Category:
+      type: string
+      enum: [PENJUALAN, BAHAN_BAKU, OPERASIONAL, GAJI, TRANSFER, LAINNYA]
+    Role:
+      type: string
+      enum: [ADMIN, TELLER, NASABAH]
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum: [VALIDATION_ERROR, UNAUTHORIZED, INVALID_CREDENTIALS, FORBIDDEN, NOT_FOUND, DUPLICATE, CUSTOMER_HAS_ACCOUNTS, INSUFFICIENT_BALANCE, ACCOUNT_BLOCKED, ACCOUNT_CLOSED, LIMIT_EXCEEDED, TOO_MANY_REQUESTS, INTERNAL_ERROR]
+            message: { type: string }
+            details:
+              type: array
+              items:
+                type: object
+                required: [field, issue]
+                properties:
+                  field: { type: string }
+                  issue: { type: string }
+                  message: { type: string }
+
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string, examples: [teller.sim] }
+        password: { type: string, format: password }
+    LoginResponse:
+      type: object
+      required: [accessToken, expiresIn, user]
+      properties:
+        accessToken: { type: string, description: JWT }
+        expiresIn: { type: integer, description: Detik, examples: [900] }
+        user: { $ref: '#/components/schemas/User' }
+    User:
+      type: object
+      required: [id, username, role]
+      properties:
+        id: { type: integer }
+        username: { type: string, examples: [teller.sim] }
+        role: { $ref: '#/components/schemas/Role' }
+        customerId: { type: [integer, 'null'], description: Terisi untuk role NASABAH }
+
+    Branch:
+      type: object
+      required: [id, branchCode, branchName, city]
+      properties:
+        id: { type: integer }
+        branchCode: { type: string, examples: [KCP-SIM-01] }
+        branchName: { type: string, examples: [Cabang Simulasi Kota Tua] }
+        city: { type: string, examples: [Jakarta] }
+
+    CustomerSummary:
+      type: object
+      required: [id, cifNo, fullName, segment, branchCode]
+      properties:
+        id: { type: integer }
+        cifNo: { type: string, examples: [CIF-SIM-0001] }
+        fullName: { type: string }
+        segment: { $ref: '#/components/schemas/Segment' }
+        branchCode: { type: string }
+    CustomerInput:
+      type: object
+      required: [fullName, email, phone, segment, branchId]
+      additionalProperties: false
+      properties:
+        fullName: { type: string, minLength: 3, maxLength: 100 }
+        email: { type: string, format: email }
+        phone: { type: string, pattern: '^0800-0000-\d{4}$', description: Nomor simulasi }
+        segment: { $ref: '#/components/schemas/Segment' }
+        branchId: { type: integer, minimum: 1 }
+    CustomerDetail:
+      type: object
+      required: [id, cifNo, fullName, email, phone, segment, branchId, branchCode, createdAt, accountCount]
+      properties:
+        id: { type: integer }
+        cifNo: { type: string }
+        fullName: { type: string }
+        email: { type: string, format: email }
+        phone: { type: [string, 'null'], description: Boleh kosong (2 nasabah seed tanpa telepon) }
+        segment: { $ref: '#/components/schemas/Segment' }
+        branchId: { type: integer }
+        branchCode: { type: string }
+        createdAt: { type: string, format: date-time }
+        accountCount: { type: integer, minimum: 0 }
+    CustomerPage:
+      type: object
+      required: [data, page, pageSize, total]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/CustomerSummary' }
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+
+    Account:
+      type: object
+      required: [id, accountNo, customerId, product, balance, status, openedAt]
+      properties:
+        id: { type: integer }
+        accountNo: { type: string, examples: [SIM-1000001] }
+        customerId: { type: integer }
+        product: { type: string, enum: [TABUNGAN, GIRO] }
+        balance: { $ref: '#/components/schemas/Money' }
+        status: { type: string, enum: [AKTIF, DIBLOKIR, DITUTUP] }
+        openedAt: { type: string, format: date-time }
+
+    Transaction:
+      type: object
+      required: [id, refNo, accountId, txnType, category, amount, txnAt]
+      properties:
+        id: { type: integer }
+        refNo: { type: string, examples: [REF-SIM-000001] }
+        accountId: { type: integer }
+        txnType: { type: string, enum: [SETOR, TARIK, TRANSFER_MASUK, TRANSFER_KELUAR] }
+        category: { $ref: '#/components/schemas/Category' }
+        amount: { $ref: '#/components/schemas/Money' }
+        txnAt: { type: string, format: date-time }
+        description: { type: [string, 'null'] }
+    TransactionPage:
+      type: object
+      required: [data, page, pageSize, total]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Transaction' }
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+
+    TransferRequest:
+      type: object
+      description: Rekening tujuan diisi `toAccountId` atau `toAccountNo` (form mobile/web memakai nomor rekening).
+      required: [fromAccountId, amount]
+      anyOf:
+        - required: [toAccountId]
+        - required: [toAccountNo]
+      properties:
+        fromAccountId: { type: integer, minimum: 1 }
+        toAccountId: { type: integer, minimum: 1 }
+        toAccountNo: { type: string, examples: [SIM-1000005] }
+        amount: { $ref: '#/components/schemas/Money' }
+        description: { type: string, maxLength: 200 }
+    TransferResult:
+      type: object
+      required: [refNo, fromAccountId, toAccountId, amount, txnAt]
+      properties:
+        refNo: { type: string }
+        fromAccountId: { type: integer }
+        toAccountId: { type: integer }
+        amount: { $ref: '#/components/schemas/Money' }
+        txnAt: { type: string, format: date-time }
+
+    BranchBalance:
+      type: object
+      required: [branchCode, branchName, accountCount, totalBalance]
+      properties:
+        branchCode: { type: string }
+        branchName: { type: string }
+        accountCount: { type: integer }
+        totalBalance: { $ref: '#/components/schemas/Money' }
+
+    Cashflow:
+      type: object
+      required: [month, accountId, accountNo, transactions, totalIn, totalOut, net, categories]
+      properties:
+        month: { type: string, examples: ['2026-03'] }
+        accountId: { type: [integer, 'null'] }
+        accountNo: { type: [string, 'null'] }
+        transactions: { type: integer }
+        totalIn: { $ref: '#/components/schemas/Money' }
+        totalOut: { $ref: '#/components/schemas/Money' }
+        net: { $ref: '#/components/schemas/Money' }
+        categories:
+          type: array
+          items:
+            type: object
+            required: [category, in, out, count]
+            properties:
+              category: { $ref: '#/components/schemas/Category' }
+              in: { $ref: '#/components/schemas/Money' }
+              out: { $ref: '#/components/schemas/Money' }
+              count: { type: integer }

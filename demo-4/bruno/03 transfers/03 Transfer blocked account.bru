@@ -1,0 +1,24 @@
+meta {
+  name: Transfer blocked account
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/transfers
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "fromAccountId": 11,
+    "toAccountId": 1,
+    "amount": "100000.00"
+  }
+}
+
+assert {
+  res.status: eq 409
+  res.body.error.code: eq ACCOUNT_BLOCKED
+}

@@ -1,0 +1,23 @@
+meta {
+  name: List customers filter UMKM
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/customers?segment=UMKM&q=contoh
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("semua hasil segment UMKM", function () {
+    const data = res.getBody().data;
+    expect(data.length).to.be.greaterThan(0);
+    data.forEach((c) => expect(c.segment).to.equal("UMKM"));
+  });
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Cashflow March
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/reports/cashflow?accountId=1&month=2026-03
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.month: eq 2026-03
+  res.body.accountNo: eq SIM-1000001
+  res.body.categories: isArray
+  res.body.net: isString
+}

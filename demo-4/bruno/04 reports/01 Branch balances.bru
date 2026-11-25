@@ -1,0 +1,17 @@
+meta {
+  name: Branch balances
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/reports/branch-balances
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: length 3
+  res.body.data[0].totalBalance: matches ^\d+\.\d{2}$
+}

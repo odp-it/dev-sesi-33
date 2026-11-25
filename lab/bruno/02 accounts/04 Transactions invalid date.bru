@@ -1,0 +1,16 @@
+meta {
+  name: Transactions invalid date
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/accounts/1/transactions?from=2026-13-01
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 400
+  res.body.error.code: eq VALIDATION_ERROR
+}
